@@ -1,0 +1,7 @@
+[0m[[0m[31merror[0m] [0m[0m/home/facu/Documentos_Linux/FAMAF/Paradigmas/test_lab1/src/test/scala/reddit/StatisticsTest.scala:60:24: value contains is not a member of Iterable[String][0m
+[0m[[0m[31merror[0m] [0m[0m    assert(result.keys.contains("scala"))[0m
+[0m[[0m[31merror[0m] [0m[0m                       ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/facu/Documentos_Linux/FAMAF/Paradigmas/test_lab1/src/test/scala/reddit/StatisticsTest.scala:61:24: value contains is not a member of Iterable[String][0m
+[0m[[0m[31merror[0m] [0m[0m    assert(result.keys.contains("java"))[0m
+[0m[[0m[31merror[0m] [0m[0m                       ^[0m
+[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m

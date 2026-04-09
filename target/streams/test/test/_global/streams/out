@@ -1,0 +1,45 @@
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(reddit.FileIOTest, org.scalatest.tools.Framework$$anon$1@29be3da9, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(reddit.RedditParserTest, org.scalatest.tools.Framework$$anon$1@29be3da9, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(reddit.StatisticsTest, org.scalatest.tools.Framework$$anon$1@29be3da9, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(reddit.TextProcessingTest, org.scalatest.tools.Framework$$anon$1@29be3da9, false, [SuiteSelector])[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mStatisticsTest:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- mentionsTop: should be callable without errors[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- mentionsTop: should respect limit parameter[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- mentionsTop: should order by frequency descending[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- mentionsTop: should handle empty list[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- mentionsTop: limit should work[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- basicStats: should calculate stats correctly[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- basicStats: should handle empty list[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- groupBySubreddit: should group posts by subreddit[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- generateSubredditReport: should generate report[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mTextProcessingTest:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- tokenize: should split text into words[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- tokenize: should handle punctuation[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- tokenize: should handle empty string[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- tokenize: should handle mentions with u/[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- formatDateFromUTC: should format timestamp correctly[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- formatDateFromUTC: should handle epoch[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mRedditParserTest:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- parsePosts: should parse valid Reddit JSON[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- parsePosts: should handle missing title with fallback[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- parsePosts: should handle multiple posts[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- parsePosts: should return None for invalid JSON[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- parsePosts: should handle posts with special characters[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- parsePosts: should preserve score field[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mFileIOTest:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- readSubscriptions: should parse valid JSON file[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- readSubscriptions: should return None for missing file[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- readSubscriptions: should return None for invalid JSON[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- readSubscriptions: should use default minScore of 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- readSubscriptions: should convert minScore string to Int[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- loadSubscriptionsFromResources: should load from classpath[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mRun completed in 669 milliseconds.[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mTotal number of tests run: 27[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mSuites: completed 4, aborted 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mTests: succeeded 27, failed 0, canceled 0, ignored 0, pending 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mAll tests passed.[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0mPassed tests:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	reddit.RedditParserTest[0m
+[0m[[0m[0mdebug[0m] [0m[0m	reddit.FileIOTest[0m
+[0m[[0m[0mdebug[0m] [0m[0m	reddit.StatisticsTest[0m
+[0m[[0m[0mdebug[0m] [0m[0m	reddit.TextProcessingTest[0m
