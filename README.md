@@ -116,6 +116,11 @@ sbt "compile; run"
 sbt "~run"
 ```
 
+### Testear
+```bash
+sbt test
+```
+
 ---
 
 ## 📚 Flujo de Aprendizaje Recomendado

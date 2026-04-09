@@ -330,6 +330,7 @@ for {
     url <- (data \ "url").extractOpt[String]
 } yield {
     // Usar extractedTitle en el yield
+    val date = TextProcessing.formatDateFromUTC(created_utc.toLong)
     (subreddit, extractedTitle, selftext, date, score, url)
 }
 
@@ -398,7 +399,7 @@ def parsePosts(jsonString: String): Option[List[Post]] = {
 
 ### Compilar
 ```bash
-cd /home/facu/Documentos_Linux/FAMAF/Paradigmas/test_lab1
+cd test_lab1
 sbt compile
 ```
 
