@@ -412,6 +412,11 @@ sbt run
 sbt "~run"
 ```
 
+### Testear
+```bash
+sbt "test"
+```
+
 ---
 
 ## 📝 Checklist de Implementación
