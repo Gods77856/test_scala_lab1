@@ -61,7 +61,7 @@ Antes de implementar, internaliza estos conceptos:
 Se agregó el campo `"minScore"` al JSON de suscripciones. Debes:
 1. Modificar el tipo `Subscription` para incluir `minScore: Int`
 2. Implementar `FileIO.readSubscriptions()` para parsearlo
-3. En `Main.scala`, filtrar posts donde `score < minScore`
+3. En `Main.scala`, filtrar posts para conservar aquellos cuyo `score` sea mayor o igual a `minScore` (usar `post._5 >= minScore`).
 
 ### Archivos Involucrados
 - [FileIO.scala](./src/main/scala/FileIO.scala) - Paso 1
@@ -74,7 +74,7 @@ Se agregó el campo `"minScore"` al JSON de suscripciones. Debes:
   {
     "name": "Scala",
     "url": "https://www.reddit.com/r/scala/.json",
-    "minScore": "50"
+    "minScore": 50
   },
   {
     "name": "Java",
@@ -92,25 +92,26 @@ Se agregó el campo `"minScore"` al JSON de suscripciones. Debes:
 **Qué hacer:**
 1. Lee el archivo del path
 2. Parsea con json4s: `parse(contenido)`
-3. Extrae lista de mapas: `json.extract[List[Map[String, String]]]`
-4. Transforma cada mapa en tupla `(name, url, minScore)`
-   - `s.getOrElse("minScore", "0").toInt` para manejar campo ausente
+3. Extrae la lista de objetos JSON y, para cada elemento, usa `extractOpt` para cada campo;
+   maneja `minScore` de forma robusta (puede venir como `Int` o `String`).
 
-**Pseudocódigo:**
+**Pseudocódigo (extracción segura):**
 ```scala
 def readSubscriptions(path: String): Option[List[Subscription]] = {
   try {
     val cont = scala.io.Source.fromFile(path).mkString
     val json = parse(cont)
-    val list = json.extractOpt[List[Map[String, String]]]
-    list.map { subs =>
-      subs.map { s =>
-        val name = s.getOrElse("name", "")
-        val url = s.getOrElse("url", "")
-        val minScore = s.getOrElse("minScore", "0").toInt
-        (name, url, minScore)
-      }
-    }
+    // Si el root es un array, children contiene cada objeto
+    val items = json.children
+    val subs = items.map { item =>
+      val name = (item \ "name").extractOpt[String].getOrElse("")
+      val url = (item \ "url").extractOpt[String].getOrElse("")
+      val minScore = (item \ "minScore").extractOpt[Int]
+        .orElse((item \ "minScore").extractOpt[String].map(_.toInt))
+        .getOrElse(0)
+      (name, url, minScore)
+    }.toList
+    Some(subs)
   } catch {
     case _: Exception => None
   }

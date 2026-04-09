@@ -59,6 +59,7 @@ Si necesitas recordar cómo funciona `flatMap`, `groupBy`, JSON4s, abre **[GUT.m
 - Busca la función `readSubscriptions()`
 - Implementa la lógica de lectura del archivo JSON
 - Retorna `Some(List[Subscription])` con el nuevo campo `minScore`
+- Nota: `minScore` puede venir como número o como cadena; extraerlo con `extractOpt[Int]` o con `extractOpt[String].map(_.toInt)` y usar `0` por defecto.
 
 ### 4. Implementa Ejercicio 1 (Paso 2)
 
@@ -249,4 +250,3 @@ Si tienes dudas, refiere a:
 - **EJERCICIOS.md** para explicación conceptual
 - **GUT.md** para referencia técnica rápida
 - Código comentado en cada archivo `.scala`
-- **GITHUB_DEPLOYMENT.md** para publicar en GitHub
