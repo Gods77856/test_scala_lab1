@@ -36,9 +36,12 @@ class StatisticsTest extends AnyFunSuite {
     assert(result.isEmpty)
   }
 
-  test("mentionsTop: limit should work") {
-    val result = Statistics.mentionsTop(samplePosts, 1)
-    assert(result.length <= 1)
+  test("mentionsTop: should extract and count mentions correctly") {
+    val result = Statistics.mentionsTop(samplePosts, 10)
+    // From the sample posts, u/spez appears 5 times (2+1+1+1), u/torvalds_right 1 time, u/functionalFan 1 time
+    assert(result.nonEmpty, "Should find mentions")
+    assert(result.head._1 == "u/spez", s"Most frequent should be u/spez but got ${result.headOption}")
+    assert(result.head._2 == 5, s"u/spez should appear 5 times but got ${result.head._2}")
   }
 
   test("basicStats: should calculate stats correctly") {

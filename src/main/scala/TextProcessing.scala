@@ -26,11 +26,14 @@ object TextProcessing {
 
   /**
    * Tokeniza un texto en palabras (elimina puntuación).
+   * Preserva menciones de usuarios (u/usuario) y subreddits (r/subreddit).
    *
    * @param text Texto a tokenizar
    * @return Lista de palabras
    */
   def tokenize(text: String): List[String] = {
-    text.split("\\W+").filter(_.nonEmpty).toList
+    // Primero extrae menciones de usuarios (u/...) y subreddits (r/...)
+    val mentionPattern = """(u/\w+|r/\w+|\w+)""".r
+    mentionPattern.findAllIn(text).toList.filter(_.nonEmpty)
   }
 }
