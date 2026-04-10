@@ -68,7 +68,15 @@ object Statistics {
     //       groupBy() devuelve Map, necesitas .toList para convertir
     //       sortBy(-_._2) ordena descendente (el - invierte el orden)
     
-    List.empty[(String, Int)]  // Reemplaza con tu implementación
+    posts
+      .flatMap(post => TextProcessing.tokenize(post._3))
+      .filter(_.startsWith("u/"))
+      .filter(_.length > 2)
+      .groupBy(identity)
+      .map { case (mention, occurrences) => (mention, occurrences.length) }
+      .toList
+      .sortBy(-_._2)
+      .take(limit)
   }
 
   /**
