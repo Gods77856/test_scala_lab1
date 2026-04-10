@@ -13,7 +13,7 @@ import scalaj.http.Http
  */
 object FileIO {
 
-  implicit val formats = org.json4s.DefaultFormats
+  implicit val formats: org.json4s.DefaultFormats.type = org.json4s.DefaultFormats
   /**
    * Tipo Subscription extendido con campo minScore.
    * EJERCICIO 1: Este tipo debe incluir el nuevo campo minScore.

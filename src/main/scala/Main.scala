@@ -1,5 +1,8 @@
 package reddit
 
+import reddit.RedditParser.Post
+import reddit.FileIO.Subscription
+
 /**
  * Main.scala
  *

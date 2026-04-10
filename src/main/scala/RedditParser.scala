@@ -12,7 +12,7 @@ import org.json4s.DefaultFormats._
  */
 object RedditParser {
 
-  implicit val formats = org.json4s.DefaultFormats
+  implicit val formats: org.json4s.DefaultFormats.type = org.json4s.DefaultFormats
 
   // ===== TIPOS INMUTABLES =====
   /**
@@ -101,15 +101,17 @@ object RedditParser {
         // TOLERANCIA A FALLOS: Extrae title con fallback
         val extractedTitle = (data \ "title").extractOpt[String].getOrElse("Sin Título")
         
-        for {
-          subreddit <- (data \ "subreddit").extractOpt[String]
-          selftext <- (data \ "selftext").extractOpt[String]
-          createdUtc <- (data \ "created_utc").extractOpt[Double]
-          score <- (data \ "score").extractOpt[Int]
-          url <- (data \ "url").extractOpt[String]
-        } yield {
-          val date = TextProcessing.formatDateFromUTC(createdUtc.toLong)
-          (subreddit, extractedTitle, selftext, date, score, url)
+        (data \ "subreddit").extractOpt[String].flatMap {subreddit =>
+          (data \ "selftext").extractOpt[String].flatMap { selftext =>
+            (data \ "created_utc").extractOpt[Double].flatMap { created_utc =>
+              (data \ "score").extractOpt[Int].flatMap { score =>
+                (data \ "url").extractOpt[String].map { url =>
+                  val date = TextProcessing.formatDateFromUTC(created_utc.toLong)
+                  (subreddit, extractedTitle, selftext, date, score, url)
+                }
+              }
+            }
+          }
         }
       })
       
