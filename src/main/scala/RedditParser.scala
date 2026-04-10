@@ -95,7 +95,23 @@ object RedditParser {
       // Referencia: Ver EJERCICIOS.md Ejercicio 3
       // Hint: TextProcessing.formatDateFromUTC(utcTimestamp.toLong) formatea la fecha
       
-      Some(List.empty[Post])  // Reemplaza con tu implementación
+      Some(children.flatMap { child =>
+        val data = child \ "data"
+        
+        // TOLERANCIA A FALLOS: Extrae title con fallback
+        val extractedTitle = (data \ "title").extractOpt[String].getOrElse("Sin Título")
+        
+        for {
+          subreddit <- (data \ "subreddit").extractOpt[String]
+          selftext <- (data \ "selftext").extractOpt[String]
+          createdUtc <- (data \ "created_utc").extractOpt[Double]
+          score <- (data \ "score").extractOpt[Int]
+          url <- (data \ "url").extractOpt[String]
+        } yield {
+          val date = TextProcessing.formatDateFromUTC(createdUtc.toLong)
+          (subreddit, extractedTitle, selftext, date, score, url)
+        }
+      })
       
     } catch {
       case _: Exception => None

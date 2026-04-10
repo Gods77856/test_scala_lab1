@@ -341,7 +341,7 @@ for {
       (data \ "score").extractOpt[Int].flatMap { score =>
         (data \ "url").extractOpt[String].map { url =>
           val date = TextProcessing.formatDateFromUTC(created_utc.toLong)
-          (subreddit, ext_title, selftext, date, score, url)
+          (subreddit, extractedTitle, selftext, date, score, url)
         }
       }
     }
