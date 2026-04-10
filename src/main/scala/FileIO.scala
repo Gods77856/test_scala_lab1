@@ -56,7 +56,23 @@ object FileIO {
     //
     // Referencia: Ver EJERCICIOS.md Ejercicio 1 - Paso 1
     
-    None  // Reemplaza con tu implementación
+    try {
+      val cont = scala.io.Source.fromFile(path).mkString
+      val json = parse(cont)
+      // Si el root es un array, children contiene cada objeto
+      val items = json.children
+      val subs = items.map { item =>
+        val name = (item \ "name").extractOpt[String].getOrElse("")
+        val url = (item \ "url").extractOpt[String].getOrElse("")
+        val minScore = (item \ "minScore").extractOpt[Int]
+          .orElse((item \ "minScore").extractOpt[String].map(_.toInt))
+          .getOrElse(0)
+        (name, url, minScore)
+      }.toList
+      Some(subs)
+    } catch {
+      case _: Exception => None
+    }
   }
 
   /**
