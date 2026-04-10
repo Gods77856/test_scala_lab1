@@ -436,3 +436,102 @@ val result = if (list.nonEmpty) list.head else "default"
 ---
 
 ¡Listo para empezar! 🚀
+
+## ⚠️ Secciones Extra (No Crucial)
+
+Las siguientes secciones son material adicional útil para el laboratorio, pero no son estrictamente necesarias para completar los 3 ejercicios. Se incluyen como referencia para situaciones reales y buenas prácticas.
+
+## 🌐 I/O y Manejo Funcional de Recursos (`scala.util.Using`)
+
+El manejo imperativo utiliza `try/catch/finally` para cerrar archivos o conexiones de red. En Scala moderno, preferimos `Using`, que cierra automáticamente los recursos (como un bloque `try-with-resources` en Java) y se integra perfectamente con colecciones funcionales devolviendo un `Try` que podemos convertir a `Option`.
+
+### Descargar desde una URL de forma segura
+
+```scala
+import scala.util.Using
+import scala.io.Source
+
+// Devuelve Some(contenido) si tiene éxito, o None si falla la red.
+def download(url: String): Option[String] = {
+  Using(Source.fromURL(url)) { source =>
+    source.mkString
+  }.toOption
+}
+```
+
+---
+
+## 🗃️ Colecciones Optimizadas: `Set`
+
+Mientras que `List` es genial para secuencias, `Set` (Conjunto) es la estructura funcional ideal para verificar membresía (por ejemplo, buscar *stopwords*). Las búsquedas en un `Set` son de tiempo constante $O(1)$.
+
+```scala
+val stopwords: Set[String] = Set("the", "and", "or", "in")
+
+val words = List("the", "scala", "and", "data")
+
+// filterNot es lo opuesto a filter. Mantiene lo que NO cumple la condición.
+val validWords = words.filterNot(word => stopwords.contains(word))
+// List("scala", "data")
+```
+
+---
+
+## 🧹 Limpieza Avanzada de Strings
+
+En el procesamiento de feeds, los textos vienen sucios. Debes dominar la limpieza de cadenas sin usar variables temporales.
+
+### `trim` y `nonEmpty`
+Ideal para filtrar posts vacíos que solo contienen espacios.
+
+```scala
+val text1 = "   "
+val text2 = "Scala"
+
+text1.trim.isEmpty   // true (quita los espacios y revisa si está vacío)
+text2.trim.nonEmpty  // true
+```
+
+### Expresiones Regulares en `split`
+Para tokenizar texto ignorando puntuación y considerando caracteres del español:
+
+```scala
+val text = "¡Hola, mundo! ¿Cómo están en 2025?"
+// Divide el texto usando todo lo que NO sea una letra (incluyendo acentos) como separador
+val tokens = text.split("[^A-Za-zÁÉÍÓÚÑáéíóúñ]+").toList.filter(_.nonEmpty)
+// List("Hola", "mundo", "Cómo", "están", "en")
+```
+
+---
+
+## ⏱️ Interoperabilidad con Java: Fechas y Tiempos
+
+Scala utiliza las robustas bibliotecas de Java (`java.time`) para manejar fechas. Los JSON de Reddit proveen el tiempo en formato UNIX (segundos desde 1970). 
+
+```scala
+import java.time.{Instant, ZoneId}
+import java.time.format.DateTimeFormatter
+
+val utcFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))
+
+val unixTimestamp: Long = 1711718400L // Viene del JSON (created_utc)
+val dateString: String = utcFormatter.format(Instant.ofEpochSecond(unixTimestamp))
+// "2024-03-29 00:00:00"
+```
+
+---
+
+## 🏛️ Diseño Funcional: "Functional Core, Imperative Shell"
+
+Para resolver el laboratorio correctamente, debes dividir tu código mentalmente en dos áreas:
+
+1. **El Núcleo Funcional (Functional Core):** - Archivos: `RedditParser.scala`, `Statistics.scala`, `WordProcessor.scala`.
+   - **Regla:** Cero efectos secundarios. NO usar `println`, NO leer la red, NO variables `var`. Todas las funciones reciben datos (`String`, `List[Post]`) y devuelven datos modificados. Si algo falla, devuelven `Option`.
+
+2. **La Capa Imperativa (Imperative Shell):**
+   - Archivos: `Main.scala`, `FileIO.scala`.
+   - **Regla:** Aquí ocurre la "suciedad". Es donde lees el archivo `subscriptions.json`, donde haces la petición HTTP para descargar los feeds, y donde finalmente imprimes los resultados a la consola (`println`).
+
+**Ejemplo de Flujo:**
+`Main.scala` pide a `FileIO` que descargue un String (Imperativo) → `Main` pasa el String a `RedditParser` para que lo convierta en `List[Post]` (Funcional) → `Main` pasa los posts a `Statistics` para contarlos (Funcional) → `Main` imprime el reporte en pantalla (Imperativo).
+
