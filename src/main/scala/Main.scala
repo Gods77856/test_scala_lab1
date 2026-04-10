@@ -60,8 +60,23 @@ object Main extends App {
       // Nota: post._5 es el score (Int), minScore es un Int
       // Referencia: Ver EJERCICIOS.md Ejercicio 1 - Paso 2
       
-      val allPosts: List[RedditParser.Post] = List.empty  // Reemplaza con tu implementación
-      
+      val allPosts: List[Post] = subscriptions.flatMap { case (name, url, minScore) =>
+        FileIO.downloadFeed(url) match {
+          case Some(jsonString) =>
+            RedditParser.parsePosts(jsonString) match {
+              case Some(posts) =>
+                val filteredPosts = posts.filter(post => post._5 >= minScore)
+                println(s"  ✓ Parsed ${filteredPosts.length} posts (Score >= $minScore) from r/$name")
+                filteredPosts
+              case None =>
+                println(s"  ✗ Failed to parse posts from r/$name")
+                List.empty
+            }
+          case None =>
+            println(s"  ✗ Failed to download feed from r/$name")
+            List.empty
+        }
+      }      
       println()
       println(s"Total posts collected: ${allPosts.length}")
       println()
