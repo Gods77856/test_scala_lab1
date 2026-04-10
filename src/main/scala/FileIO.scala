@@ -100,7 +100,27 @@ object FileIO {
    * Lee el archivo de suscripciones desde los recursos.
    */
   def loadSubscriptionsFromResources(): Option[List[Subscription]] = {
-    val path = getClass.getResource("/subscriptions.json").getPath
-    readSubscriptions(path)
+    try {
+      val inputStream = getClass.getResourceAsStream("/subscriptions.json")
+      if (inputStream == null) {
+        None
+      } else {
+        val content = scala.io.Source.fromInputStream(inputStream).mkString
+        inputStream.close()
+        val json = parse(content)
+        val items = json.children
+        val subs = items.map { item =>
+          val name = (item \ "name").extractOpt[String].getOrElse("")
+          val url = (item \ "url").extractOpt[String].getOrElse("")
+          val minScore = (item \ "minScore").extractOpt[Int]
+            .orElse((item \ "minScore").extractOpt[String].map(_.toInt))
+            .getOrElse(0)
+          (name, url, minScore)
+        }.toList
+        Some(subs)
+      }
+    } catch {
+      case _: Exception => None
+    }
   }
 }

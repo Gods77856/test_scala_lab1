@@ -25,9 +25,11 @@ class TextProcessingTest extends AnyFunSuite {
   test("tokenize: should handle mentions with u/") {
     val text = "u/spez is the founder"
     val result = TextProcessing.tokenize(text)
-    // Note: tokenize splits on \W+ so u/spez becomes u and spez
-    assert(result.contains("u"))
-    assert(result.contains("spez"))
+    // Mentions like u/spez should be preserved as single tokens
+    assert(result.contains("u/spez"))
+    assert(result.contains("is"))
+    assert(result.contains("the"))
+    assert(result.contains("founder"))
   }
 
   test("formatDateFromUTC: should format timestamp correctly") {
