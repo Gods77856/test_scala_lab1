@@ -12,7 +12,7 @@ import org.json4s.DefaultFormats._
  */
 object RedditParser {
 
-  implicit val formats = org.json4s.DefaultFormats
+  implicit val formats: org.json4s.DefaultFormats.type = org.json4s.DefaultFormats
 
   // ===== TIPOS INMUTABLES =====
   /**
