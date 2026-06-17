@@ -17,11 +17,9 @@ object TextProcessing {
    * @return String con formato "YYYY-MM-DD HH:mm"
    */
   def formatDateFromUTC(utcTimestamp: Long): String = {
-    val instant = Instant.ofEpochSecond(utcTimestamp)
-    val formatter = DateTimeFormatter
-      .ofPattern("yyyy-MM-dd HH:mm")
-      .withZone(ZoneId.systemDefault())
-    formatter.format(instant)
+    // @FECHAS_UTC
+    // TODO: Convertir timestamp UNIX a fecha UTC "yyyy-MM-dd HH:mm".
+    ""
   }
 
   /**
@@ -32,8 +30,7 @@ object TextProcessing {
    * @return Lista de palabras
    */
   def tokenize(text: String): List[String] = {
-    // Primero extrae menciones de usuarios (u/...) y subreddits (r/...)
-    val mentionPattern = """(u/\w+|r/\w+|\w+)""".r
-    mentionPattern.findAllIn(text).toList.filter(_.nonEmpty)
+    // TODO: Dividir texto en palabras preservando menciones u/... y r/...
+    List.empty[String]
   }
 }

@@ -1,5 +1,39 @@
 # Reddit Scala Lab - Guía de Estudio y Ejercicios
 
+Esta guía explica cómo mapear una consigna nueva del parcial a un patrón funcional. El código fuente Scala está como skeleton para practicar; las soluciones copiables y explicadas están en los archivos `.md`.
+
+---
+
+## 🧠 MAPA DE RESOLUCIÓN PARA EL PARCIAL
+
+Si en el enunciado del parcial lees:
+
+| Si la consigna dice... | Tu acción debe ser... | Archivo / función de referencia |
+|---|---|---|
+| "Ignorar/descartar campos faltantes" o "si falta X no incluir el elemento" | Usar `for-comprehension` con `extractOpt`. Si aparece `None`, ese elemento se descarta automáticamente. | `RedditParser.scala` -> `parsePosts`; `GUT.md` -> Patrón 1 |
+| "Si el campo falla, usar X por defecto" | Extraer fuera del `for-comprehension` con `.extractOpt[T].getOrElse(X)`. | `RedditParser.scala` -> `extractedTitle` |
+| "El número puede venir como texto o entero" | Probar `extractOpt[Int]` y luego `extractOpt[String].flatMap(Try(...).toOption)`. | `FileIO.scala` -> `minScoreFrom`; `GUT.md` -> Patrón 1 |
+| "No tengan texto", "solo espacios" o "sin título" | Filtrar con `.trim.nonEmpty` sobre título y selftext. | `Statistics.scala` -> `filterRelevantPosts`; tag `@FILTER_RELEVANT` |
+| "Calcular el total de..." o "acumular..." | No usar `var`. Usar `foldLeft(valorInicial) { (acc, elem) => ... }`. | `Statistics.scala` -> `sumarScoresTotales`; `GUT.md` -> Patrón 3 |
+| "Frecuencia de palabras", "palabras más usadas", "extraer menciones" | Usar `flatMap` para tokenizar, `filter`, `groupBy(identity)`, `map` para contar, `sortBy`, `take`. | `Statistics.scala` -> `mentionsTop`; `GUT.md` -> Patrón 2 |
+| "Palabras que comiencen con mayúscula" y "stopwords" | Filtrar por `headOption.exists(_.isUpper)`, normalizar a minúscula y excluir `Stopwords`. | `Statistics.scala` -> `capitalizedWordsTop`; tag `@STOPWORDS` |
+| "Rechazar strings vacíos o nulos" | Normalizar con `.map(_.trim)` y filtrar con `.filter(_.nonEmpty)`. | `GUT.md` -> Patrón 2 |
+| "Convertir `Option` a otro tipo si existe" | Usar `.map()`; si la función devuelve otro `Option`, usar `.flatMap()`. | `GUT.md` -> Patrón 5 |
+| "Descargar una API y tolerar fallos" | Encapsular HTTP en `try/catch` y devolver `Option[String]`. | `FileIO.scala` -> `downloadFeed`; `GUT.md` -> Patrón 4 |
+| "Convertir fecha UNIX/UTC" | Usar `Instant.ofEpochSecond` y `DateTimeFormatter` con `ZoneId.of("UTC")`. | `TextProcessing.scala` -> `formatDateFromUTC` |
+| "Informe final", "score total", "primeros cinco posts" | Combinar `filterRelevantPosts`, `sumarScoresTotales`, `capitalizedWordsTop` y `firstPostsSummary`. | `Statistics.scala` -> `generateLab1Report`; tag `@REPORT_LAB1` |
+
+### Cómo Usar Este Mapa
+
+1. Subrayá mentalmente el verbo de la consigna: parsear, filtrar, contar, acumular, descargar.
+2. Buscá el tag correspondiente con `Ctrl+F`: `@JSON_PARSE`, `@TEXT_MINING`, `@FOLD_LEFT`, etc.
+3. Intentá completar el skeleton sin mirar la solución.
+4. Si te trabás, copiá la implementación más parecida desde esta guía, `GUT.md` o `GUIA_PARCIAL_LAB1.md`.
+5. Cambiá rutas JSON, nombres de campos y posiciones de tupla.
+6. Corré `sbt test` o un test pequeño propio.
+
+---
+
 ## 📚 Estructura del Proyecto
 
 ```
@@ -16,14 +50,23 @@ test_lab1/
 │       └── resources/
 │           └── subscriptions.json      # Datos de prueba
 ├── EJERCICIOS.md                       # Este archivo
-└── GUT.md                              # Guía de Utilidades Técnicas (proximamente)
+├── GUIA_PARCIAL_LAB1.md                # Defensa conceptual y cobertura de PDFs
+└── GUT.md                              # Guía de Utilidades Técnicas y plantillas copiables
 ```
+
+---
+
+## 📌 Lab 1 Original vs Variantes de Práctica
+
+El PDF original pide seis ejercicios: leer suscripciones, descargar posts, filtrar irrelevantes, manejar errores con `Option`, contar palabras con mayúscula y stopwords, y generar estadísticas con `fold`.
+
+Este repo además incluye variantes de práctica para parcial, como `minScore` en suscripciones, menciones `u/usuario` y fallback `"Sin Título"`. Si el parcial copia la consigna original, usá las funciones marcadas como `@FILTER_RELEVANT`, `@STOPWORDS` y `@REPORT_LAB1`. Si el parcial pide tolerancia con defaults, usá `@TOLERANCIA_FALLOS`.
 
 ---
 
 ## 🎯 Conceptos Clave a Dominar
 
-Antes de implementar, internaliza estos conceptos:
+Antes de adaptar cualquier plantilla, internaliza estos conceptos:
 
 ### 1. **Rechaza la Mutación** 
 - ❌ NO uses `var count = 0` y `for` loops
@@ -85,11 +128,11 @@ Se agregó el campo `"minScore"` al JSON de suscripciones. Debes:
 
 **Nota:** El campo `"minScore"` puede no existir → usar default 0
 
-### Paso 1: Implementar `FileIO.readSubscriptions()`
+### Paso 1: Reconocer `FileIO.readSubscriptions()`
 
 **Ubicación:** [FileIO.scala](./src/main/scala/FileIO.scala)
 
-**Qué hacer:**
+**Qué hace el patrón `@JSON_PARSE`:**
 1. Lee el archivo del path
 2. Parsea con json4s: `parse(contenido)`
 3. Extrae la lista de objetos JSON y, para cada elemento, usa `extractOpt` para cada campo;
@@ -97,6 +140,8 @@ Se agregó el campo `"minScore"` al JSON de suscripciones. Debes:
 
 **Pseudocódigo (extracción segura):**
 ```scala
+import scala.util.Try
+
 def readSubscriptions(path: String): Option[List[Subscription]] = {
   try {
     val cont = scala.io.Source.fromFile(path).mkString
@@ -107,7 +152,7 @@ def readSubscriptions(path: String): Option[List[Subscription]] = {
       val name = (item \ "name").extractOpt[String].getOrElse("")
       val url = (item \ "url").extractOpt[String].getOrElse("")
       val minScore = (item \ "minScore").extractOpt[Int]
-        .orElse((item \ "minScore").extractOpt[String].map(_.toInt))
+        .orElse((item \ "minScore").extractOpt[String].flatMap(raw => Try(raw.trim.toInt).toOption))
         .getOrElse(0)
       (name, url, minScore)
     }.toList
@@ -122,7 +167,7 @@ def readSubscriptions(path: String): Option[List[Subscription]] = {
 
 **Ubicación:** [Main.scala](./src/main/scala/Main.scala)
 
-**Qué hacer:**
+**Qué hace el patrón de flujo principal:**
 1. En el `flatMap` que recorre `subscriptions`
 2. Después de parsear posts con `RedditParser.parsePosts()`
 3. **Filtra:** `val filteredPosts = posts.filter(post => post._5 >= minScore)`
@@ -248,9 +293,9 @@ posts
   // Resultado final
 ```
 
-### Implementación Completa
+### Implementación Completa de Referencia
 
-**Ubicación:** [Statistics.scala](./src/main/scala/Statistics.scala)
+**Ubicación:** [Statistics.scala](./src/main/scala/Statistics.scala), buscá `@TEXT_MINING`.
 
 ```scala
 def mentionsTop(posts: List[Post], limit: Int): List[(String, Int)] = {
@@ -349,9 +394,9 @@ for {
 }
 ```
 
-### Implementación
+### Implementación de Referencia
 
-**Ubicación:** [RedditParser.scala](./src/main/scala/RedditParser.scala)
+**Ubicación:** [RedditParser.scala](./src/main/scala/RedditParser.scala), buscá `@TOLERANCIA_FALLOS`.
 
 ```scala
 def parsePosts(jsonString: String): Option[List[Post]] = {
@@ -420,9 +465,9 @@ sbt "test"
 
 ---
 
-## 📝 Checklist de Implementación
+## 📝 Checklist de Práctica
 
-- [ ] **Ejercicio 1 - Paso 1:** Implementar `FileIO.readSubscriptions()`
+- [ ] **Ejercicio 1 - Paso 1:** Entender y poder recrear `FileIO.readSubscriptions()`
   - [ ] Leer archivo JSON
   - [ ] Parsear con json4s
   - [ ] Extraer lista de mapas
@@ -433,12 +478,12 @@ sbt "test"
   - [ ] Implementar filtro `.filter(post => post._5 >= minScore)`
   - [ ] Verificar impresión de cantidad
   
-- [ ] **Ejercicio 2:** Implementar `Statistics.mentionsTop()`
+- [ ] **Ejercicio 2:** Entender y poder recrear `Statistics.mentionsTop()`
   - [ ] Armar pipeline completo (7 pasos)
   - [ ] Integrar en `generateSubredditReport()`
   - [ ] Descomentar impresión de top mentions
   
-- [ ] **Ejercicio 3:** Implementar tolerancia en `RedditParser.parsePosts()`
+- [ ] **Ejercicio 3:** Entender y poder recrear tolerancia en `RedditParser.parsePosts()`
   - [ ] Extraer title con fallback
   - [ ] Mantener for-comprehension limpio
   - [ ] Usar extractedTitle en yield

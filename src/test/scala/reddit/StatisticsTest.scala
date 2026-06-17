@@ -55,6 +55,55 @@ class StatisticsTest extends AnyFunSuite {
     assert(result == "No posts available")
   }
 
+  test("sumarScoresTotales: should accumulate scores with foldLeft") {
+    val result = Statistics.sumarScoresTotales(samplePosts)
+    assert(result == 400)
+  }
+
+  test("sumarScoresTotales: should return zero for empty list") {
+    val result = Statistics.sumarScoresTotales(List.empty)
+    assert(result == 0)
+  }
+
+  test("filterRelevantPosts: should remove empty selftext and fallback title") {
+    val posts = List(
+      ("scala", "Real Title", "Useful text", "2025-03-15 14:30", 10, "https://reddit.com/ok"),
+      ("scala", "   ", "Useful text", "2025-03-15 14:30", 10, "https://reddit.com/no-title"),
+      ("scala", "Sin Título", "Useful text", "2025-03-15 14:30", 10, "https://reddit.com/fallback"),
+      ("scala", "Real Title", "   ", "2025-03-15 14:30", 10, "https://reddit.com/no-text")
+    )
+
+    val result = Statistics.filterRelevantPosts(posts)
+    assert(result.length == 1)
+    assert(result.head._6 == "https://reddit.com/ok")
+  }
+
+  test("capitalizedWordsTop: should count capitalized non-stopwords") {
+    val posts = List(
+      ("scala", "Scala Guide", "Scala is Functional. The Scala community helps.", "2025-03-15 14:30", 10, "https://reddit.com/1"),
+      ("scala", "Java Guide", "Scala and Java are JVM languages.", "2025-03-15 14:31", 20, "https://reddit.com/2")
+    )
+
+    val result = Statistics.capitalizedWordsTop(posts, 3)
+    assert(result.contains(("scala", 4)))
+    assert(!result.exists(_._1 == "the"))
+  }
+
+  test("firstPostsSummary: should keep title, date and url") {
+    val result = Statistics.firstPostsSummary(samplePosts, 2)
+    assert(result == List(
+      ("Learning Scala", "2025-03-15 14:30", "https://reddit.com/1"),
+      ("Monads Explained", "2025-03-15 15:00", "https://reddit.com/2")
+    ))
+  }
+
+  test("generateLab1Report: should include requested Lab 1 sections") {
+    val report = Statistics.generateLab1Report("scala", samplePosts)
+    assert(report.contains("Total score: 400"))
+    assert(report.contains("Palabras frecuentes"))
+    assert(report.contains("Primeros posts"))
+  }
+
   test("groupBySubreddit: should group posts by subreddit") {
     val result = Statistics.groupBySubreddit(samplePosts)
     assert(result.keys.toList.contains("scala"))

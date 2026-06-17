@@ -55,6 +55,41 @@ class RedditParserTest extends AnyFunSuite {
     assert(result.get.head._2 == "Sin Título") // Should use fallback value
   }
 
+  test("parsePostsStrictTitle: should discard posts without title") {
+    val json = """
+    {
+      "data": {
+        "children": [
+          {
+            "data": {
+              "subreddit": "scala",
+              "selftext": "Post without title",
+              "created_utc": 1234567890,
+              "score": 50,
+              "url": "https://reddit.com/r/scala/post2"
+            }
+          },
+          {
+            "data": {
+              "subreddit": "scala",
+              "title": "Post with title",
+              "selftext": "Useful post",
+              "created_utc": 1234567890,
+              "score": 55,
+              "url": "https://reddit.com/r/scala/post3"
+            }
+          }
+        ]
+      }
+    }
+    """
+
+    val result = RedditParser.parsePostsStrictTitle(json)
+    assert(result.isDefined)
+    assert(result.get.length == 1)
+    assert(result.get.head._2 == "Post with title")
+  }
+
   test("parsePosts: should handle multiple posts") {
     val json = """
     {

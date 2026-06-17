@@ -31,9 +31,8 @@ object Main extends App {
    * Lo que debes cambiar (EJERCICIO 1):
    * 3.5 DESPUÉS de parsear, FILTRA los posts donde score < minScore
    *
-   * Hint: Usa .filter() con una lambda
-   *       val filteredPosts = posts.filter(post => post._5 >= minScore)
-   *       donde _5 es el score (Int)
+   * Hint: Usa .filter() con una lambda que compare el score del post con minScore.
+   *       Recordá que _5 es el score (Int).
    */
   
   // Cargamos las suscripciones
@@ -44,26 +43,9 @@ object Main extends App {
       println(s"✓ Loaded ${subscriptions.length} subscriptions")
       println()
 
-      // TODO - EJERCICIO 1 - PASO 2: Descargar feeds y aplicar filtro de minScore
-      //
-      // Estructura esperada:
-      // val allPosts = subscriptions.flatMap { case (name, url, minScore) =>
-      //   descarga el feed -> parsea los posts -> FILTRA por minScore
-      // }
-      //
-      // Pasos clave:
-      // 1. Usa flatMap para iterar sobre subscriptions
-      // 2. Descarga feed: FileIO.downloadFeed(url)
-      // 3. Parsea posts: RedditParser.parsePosts(jsonString)
-      // 4. FILTRA: posts.filter(post => post._5 >= minScore)
-      //    (post._5 es el score - recuerda el índice!)
-      // 5. Imprime cuántos posts quedaron después del filtro
-      // 6. Si algún paso falla, retorna List.empty
-      //
-      // Nota: post._5 es el score (Int), minScore es un Int
-      // Referencia: Ver EJERCICIOS.md Ejercicio 1 - Paso 2
-      
-      val allPosts: List[RedditParser.Post] = List.empty  // Reemplaza con tu implementación
+      // TODO: Descargar, parsear y filtrar por minScore usando flatMap.
+      // Pista: la solución completa está en EJERCICIOS.md y GUIA_PARCIAL_LAB1.md.
+      val allPosts: List[Post] = List.empty[Post]
       
       println()
       println(s"Total posts collected: ${allPosts.length}")

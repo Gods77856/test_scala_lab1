@@ -4,6 +4,242 @@ Este documento es una referencia rápida de conceptos y herramientas que usarás
 
 ---
 
+## 🚀 PLANTILLAS DE PARCIAL (COPIAR, PEGAR Y ADAPTAR)
+
+Usa estas plantillas cambiando solo lo que está en `MAYUSCULAS_SNAKE_CASE`. La idea es que durante el parcial reconozcas el patrón, copies el bloque y ajustes nombres de campos, rutas JSON y posiciones de tuplas.
+
+### Patrón 1: Lectura de JSON Seguro con Fallbacks (`@JSON_PARSE`, `@TOLERANCIA_FALLOS`)
+
+**Cuándo usarlo:** cuando una API o archivo JSON devuelve datos incompletos, o cuando un campo puede venir en más de un tipo, por ejemplo `minScore` como número o como texto.
+
+```scala
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+import scala.util.Try
+
+implicit val formats: org.json4s.DefaultFormats.type = org.json4s.DefaultFormats
+
+def intSeguro(item: JValue, campo: String, default: Int): Int = {
+  (item \ campo).extractOpt[Int]
+    .orElse((item \ campo).extractOpt[String].flatMap(raw => Try(raw.trim.toInt).toOption))
+    .getOrElse(default)
+}
+
+def parsearEntidadSegura(jsonString: String): Option[List[TUPLE_TYPE]] = {
+  try {
+    val json = parse(jsonString)
+    val elementos = (json \ "RUTA" \ "A" \ "ARRAY").children
+
+    Some(elementos.flatMap { item =>
+      val campoString = (item \ "CAMPO_TEXTO").extractOpt[String].getOrElse("DEFAULT")
+      val campoInt = intSeguro(item, "CAMPO_NUM", 0)
+
+      for {
+        req1 <- (item \ "CAMPO_REQ_1").extractOpt[String]
+        req2 <- (item \ "CAMPO_REQ_2").extractOpt[Double]
+      } yield {
+        (campoString, campoInt, req1, req2)
+      }
+    })
+  } catch {
+    case _: Exception => None
+  }
+}
+```
+
+**Regla para adaptar:** lo que va fuera del `for` es laxo y tiene fallback; lo que va dentro del `for` es obligatorio y descarta el elemento si falta.
+
+### Patrón 2: Minería de Texto y Frecuencias (`@TEXT_MINING`)
+
+**Cuándo usarlo:** cuando te pidan contar palabras frecuentes, extraer menciones, agrupar tokens, filtrar stopwords o devolver un top N.
+
+```scala
+def obtenerFrecuenciasTop(elementos: List[TUPLE_TYPE], limite: Int): List[(String, Int)] = {
+  val stopwords = Set("el", "la", "los", "las", "un", "una")
+
+  elementos
+    .flatMap(e => e._CAMPO_TEXTO.split("\\W+").toList)
+    .map(_.toLowerCase)
+    .map(_.trim)
+    .filter(_.nonEmpty)
+    .filter(_.length > 2)
+    .filterNot(stopwords.contains)
+    .filter(_.startsWith("PREFIJO_OPCIONAL"))
+    .groupBy(identity)
+    .map { case (palabra, apariciones) => (palabra, apariciones.length) }
+    .toList
+    .sortBy(-_._2)
+    .take(limite)
+}
+```
+
+**Regla para adaptar:** cambia `_CAMPO_TEXTO`, el prefijo y los filtros; la secuencia `flatMap -> filter -> groupBy -> map -> sortBy -> take` se conserva casi siempre.
+
+### Patrón 3: Reducción/Acumulación con `foldLeft` (`@FOLD_LEFT`)
+
+**Cuándo usarlo:** cuando te pidan calcular totales, acumular scores, combinar elementos en una estructura o resolverlo sin `var`.
+
+```scala
+def calcularAcumulado(elementos: List[TUPLE_TYPE]): Int = {
+  elementos.foldLeft(0) { (acumulador, item) =>
+    val valorASumar = item._CAMPO_A_SUMAR
+    acumulador + valorASumar
+  }
+}
+
+def agruparSumando(elementos: List[TUPLE_TYPE]): Map[String, Int] = {
+  elementos.foldLeft(Map.empty[String, Int]) { (mapaAcc, item) =>
+    val clave = item._CAMPO_CLAVE
+    val valorPrevio = mapaAcc.getOrElse(clave, 0)
+    mapaAcc.updated(clave, valorPrevio + item._CAMPO_VALOR)
+  }
+}
+```
+
+**Regla para adaptar:** el primer argumento de `foldLeft` es el valor inicial; el tipo del acumulador final queda determinado por ese valor.
+
+### Patrón 3B: Filtrar Posts Relevantes (`@FILTER_RELEVANT`)
+
+**Cuándo usarlo:** cuando el enunciado diga "eliminar posts sin texto", "solo espacios" o "sin título".
+
+```scala
+def esRelevante(post: Post): Boolean = {
+  val title = post._2.trim
+  val selftext = post._3.trim
+
+  title.nonEmpty && title != "Sin Título" && selftext.nonEmpty
+}
+
+val postsLimpios = posts.filter(esRelevante)
+```
+
+**Regla para adaptar:** si tu tupla tiene otras posiciones, cambiá `_2` y `_3` por los índices del título y el cuerpo.
+
+### Patrón 3C: Palabras Con Mayúscula y Stopwords (`@STOPWORDS`)
+
+**Cuándo usarlo:** Lab 1 original, ejercicio 5.
+
+```scala
+val stopwords = Set("the", "and", "or", "in", "to", "of", "a")
+
+def palabrasMayusculaTop(posts: List[Post], limite: Int): List[(String, Int)] = {
+  posts
+    .flatMap(post => TextProcessing.tokenize(s"${post._2} ${post._3}"))
+    .map(_.trim)
+    .filter(_.nonEmpty)
+    .filter(word => word.headOption.exists(_.isUpper))
+    .map(_.toLowerCase)
+    .filterNot(stopwords.contains)
+    .groupBy(identity)
+    .map { case (word, occurrences) => (word, occurrences.length) }
+    .toList
+    .sortBy { case (word, count) => (-count, word) }
+    .take(limite)
+}
+```
+
+**Regla para adaptar:** primero se decide si la palabra original empieza con mayúscula; después se normaliza a minúscula para contar equivalencias.
+
+### Patrón 3D: Informe Final del Lab 1 (`@REPORT_LAB1`)
+
+**Cuándo usarlo:** cuando pidan imprimir por suscripción el score total, palabras frecuentes y primeros cinco posts.
+
+```scala
+def generarInforme(subreddit: String, posts: List[Post]): String = {
+  val cleanPosts = filterRelevantPosts(posts)
+  val totalScore = sumarScoresTotales(cleanPosts)
+  val topWords = capitalizedWordsTop(cleanPosts, 10)
+  val firstFive = firstPostsSummary(cleanPosts, 5)
+  val report = new StringBuilder
+
+  report.append(s"## $subreddit\n")
+  report.append(s"- Total score: $totalScore\n")
+  report.append("- Palabras frecuentes:\n")
+  topWords.foreach { case (word, count) =>
+    report.append(s"  - $word: $count\n")
+  }
+  report.append("- Primeros posts:\n")
+  firstFive.foreach { case (title, date, url) =>
+    report.append(s"  - $title | $date | $url\n")
+  }
+
+  report.toString()
+}
+```
+
+### Patrón 4: Descarga HTTP Segura a `Option` (`@API_FETCH`)
+
+**Cuándo usarlo:** cuando haya que consumir una API externa y el enunciado pida manejar fallos sin romper el programa.
+
+```scala
+import scalaj.http.Http
+
+def descargarDatos(url: String): Option[String] = {
+  try {
+    val response = Http(url)
+      .header("User-Agent", "ScalaLab/1.0")
+      .timeout(connTimeoutMs = 5000, readTimeoutMs = 10000)
+      .asString
+
+    if (response.isSuccess) Some(response.body) else None
+  } catch {
+    case _: Exception => None
+  }
+}
+```
+
+### Patrón 5: Convertir y Encadenar `Option`
+
+**Cuándo usarlo:** cuando tengas un valor opcional y quieras transformarlo solo si existe.
+
+```scala
+import scala.util.Try
+
+val scoreOpt: Option[Int] = Some(10)
+
+val duplicado: Option[Int] =
+  scoreOpt.map(score => score * 2)
+
+val textoAInt: Option[Int] =
+  Some("42").flatMap(raw => Try(raw.toInt).toOption)
+
+val valorFinal: Int =
+  textoAInt.getOrElse(0)
+```
+
+### Patrón 6: Fechas UTC (`@FECHAS_UTC`)
+
+**Cuándo usarlo:** cuando la API entregue timestamps UNIX en segundos.
+
+```scala
+import java.time.{Instant, ZoneId}
+import java.time.format.DateTimeFormatter
+
+def formatDateFromUTC(utcTimestamp: Long): String = {
+  val formatter = DateTimeFormatter
+    .ofPattern("yyyy-MM-dd HH:mm")
+    .withZone(ZoneId.of("UTC"))
+
+  formatter.format(Instant.ofEpochSecond(utcTimestamp))
+}
+```
+
+### Mini-Reglas de Examen
+
+| Si te piden... | Usá... |
+|---|---|
+| Campo obligatorio | `for { campo <- extractOpt[T] } yield ...` |
+| Campo con default | `extractOpt[T].getOrElse(default)` |
+| Campo numérico mixto | `extractOpt[Int].orElse(extractOpt[String].flatMap(Try(...).toOption))` |
+| Contar apariciones | `groupBy(identity).map { case (k, xs) => (k, xs.length) }` |
+| Top N | `.toList.sortBy(-_._2).take(n)` |
+| Acumular total | `foldLeft(0)` |
+| Evitar strings vacíos | `.map(_.trim).filter(_.nonEmpty)` |
+| Post relevante | `title.trim.nonEmpty && selftext.trim.nonEmpty` |
+| Palabra con mayúscula | `word.headOption.exists(_.isUpper)` |
+
+---
+
 ## 📦 Tipos de Datos Inmutables
 
 ### Option[T] - Manejando la Ausencia
@@ -525,7 +761,7 @@ val dateString: String = utcFormatter.format(Instant.ofEpochSecond(unixTimestamp
 
 Para resolver el laboratorio correctamente, debes dividir tu código mentalmente en dos áreas:
 
-1. **El Núcleo Funcional (Functional Core):** - Archivos: `RedditParser.scala`, `Statistics.scala`, `WordProcessor.scala`.
+1. **El Núcleo Funcional (Functional Core):** - Archivos: `RedditParser.scala`, `Statistics.scala`, `TextProcessing.scala`.
    - **Regla:** Cero efectos secundarios. NO usar `println`, NO leer la red, NO variables `var`. Todas las funciones reciben datos (`String`, `List[Post]`) y devuelven datos modificados. Si algo falla, devuelven `Option`.
 
 2. **La Capa Imperativa (Imperative Shell):**
@@ -534,4 +770,3 @@ Para resolver el laboratorio correctamente, debes dividir tu código mentalmente
 
 **Ejemplo de Flujo:**
 `Main.scala` pide a `FileIO` que descargue un String (Imperativo) → `Main` pasa el String a `RedditParser` para que lo convierta en `List[Post]` (Funcional) → `Main` pasa los posts a `Statistics` para contarlos (Funcional) → `Main` imprime el reporte en pantalla (Imperativo).
-
