@@ -11,6 +11,8 @@ El objetivo del parcial no es memorizar este repo, sino defender que entendés p
 
 ## Veredicto de Cobertura
 
+Esta guía se centra en la consigna original. El análisis del parcial efectivamente evaluado está en [PARCIAL_EVALUADO_2026.md](./PARCIAL_EVALUADO_2026.md); no deben confundirse sus tipos (`Post` y `Subscription`) con las extensiones de práctica de este archivo.
+
 Con los agregados actuales, este repo sí puede usarse como guía detallada para resolver variantes razonables del Lab 1:
 
 - Tiene código de referencia que compila para lectura JSON, descarga HTTP, parsing, filtros, conteos, acumulación y reportes.
@@ -244,7 +246,7 @@ La lectura de teclado (`scala.io.StdIn.readLine`) pertenece a `Main.scala`. `pos
 
 ## Soluciones de Referencia Para Chequear
 
-El codigo Scala del repo queda como skeleton. Cuando termines tu intento, compara contra estas soluciones.
+El código Scala del repo contiene la referencia compilable. Para practicar, reimplementá una función y comparala con estas soluciones.
 
 ### `FileIO.scala`
 

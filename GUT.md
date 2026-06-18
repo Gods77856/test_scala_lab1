@@ -6,6 +6,8 @@ Este documento es una referencia rápida de conceptos y herramientas que usarás
 
 ## 🚀 PLANTILLAS DE PARCIAL (COPIAR, PEGAR Y ADAPTAR)
 
+> Para el parcial efectivamente tomado en 2026 (`count`, `before`, `author` y palabras censuradas), ir primero a [PARCIAL_EVALUADO_2026.md](./PARCIAL_EVALUADO_2026.md). Incluye una plantilla para un único `Main.scala`, casos de borde y código cubierto por tests.
+
 Usa estas plantillas cambiando solo lo que está en `MAYUSCULAS_SNAKE_CASE`. La idea es que durante el parcial reconozcas el patrón, copies el bloque y ajustes nombres de campos, rutas JSON y posiciones de tuplas.
 
 ### Patrón 1: Lectura de JSON Seguro con Fallbacks (`@JSON_PARSE`, `@TOLERANCIA_FALLOS`)
@@ -613,8 +615,12 @@ items.foreach { item =>
 ```scala
 val path = "/home/user/file.json"
 
-// Opción 1: fuente segura (recomendado)
-val content = scala.io.Source.fromFile(path).mkString
+// Fuente segura: Using siempre ejecuta close(), incluso ante una excepción.
+import scala.io.Source
+import scala.util.Using
+
+val content: Option[String] =
+  Using(Source.fromFile(path, "UTF-8"))(_.mkString).toOption
 
 // Opción 2: con manejo de excepciones
 try {

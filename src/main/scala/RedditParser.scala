@@ -28,6 +28,42 @@ object RedditParser {
   */
   type Post = (String, String, String, String, Int, String)
 
+  private def parsePostsWithTitlePolicy(
+      jsonString: String,
+      fallbackTitle: Option[String]
+  ): Option[List[Post]] = {
+    try {
+      val json = parse(jsonString)
+      val children = (json \ "data" \ "children").children
+
+      Some(children.flatMap { child =>
+        val data = child \ "data"
+        val title = fallbackTitle match {
+          case Some(default) => Some((data \ "title").extractOpt[String].getOrElse(default))
+          case None => (data \ "title").extractOpt[String]
+        }
+
+        for {
+          subreddit <- (data \ "subreddit").extractOpt[String]
+          postTitle <- title
+          selftext <- (data \ "selftext").extractOpt[String]
+          createdUtc <- (data \ "created_utc").extractOpt[Double]
+          score <- (data \ "score").extractOpt[Int]
+          url <- (data \ "url").extractOpt[String]
+        } yield (
+          subreddit,
+          postTitle,
+          selftext,
+          TextProcessing.formatDateFromUTC(createdUtc.toLong),
+          score,
+          url
+        )
+      })
+    } catch {
+      case _: Exception => None
+    }
+  }
+
   /**
    * Parsea un string JSON de Reddit y extrae los posts.
    *
@@ -70,9 +106,7 @@ object RedditParser {
    */
   def parsePosts(jsonString: String): Option[List[Post]] = {
     // @TOLERANCIA_FALLOS
-    // TODO: Parsear JSON de Reddit conservando posts sin title con "Sin Título".
-    // Pista: extraer title fuera del for-comprehension con getOrElse.
-    None
+    parsePostsWithTitlePolicy(jsonString, fallbackTitle = Some("Sin Título"))
   }
 
   /**
@@ -80,8 +114,6 @@ object RedditParser {
    */
   def parsePostsStrictTitle(jsonString: String): Option[List[Post]] = {
     // @STRICT_FIELDS
-    // TODO: Parsear JSON descartando posts sin title.
-    // Pista: title debe ir dentro del for-comprehension como campo obligatorio.
-    None
+    parsePostsWithTitlePolicy(jsonString, fallbackTitle = None)
   }
 }

@@ -18,8 +18,10 @@ object TextProcessing {
    */
   def formatDateFromUTC(utcTimestamp: Long): String = {
     // @FECHAS_UTC
-    // TODO: Convertir timestamp UNIX a fecha UTC "yyyy-MM-dd HH:mm".
-    ""
+    val formatter = DateTimeFormatter
+      .ofPattern("yyyy-MM-dd HH:mm")
+      .withZone(ZoneId.of("UTC"))
+    formatter.format(Instant.ofEpochSecond(utcTimestamp))
   }
 
   /**
@@ -30,7 +32,7 @@ object TextProcessing {
    * @return Lista de palabras
    */
   def tokenize(text: String): List[String] = {
-    // TODO: Dividir texto en palabras preservando menciones u/... y r/...
-    List.empty[String]
+    val tokenPattern = """(u/\w+|r/\w+|[\p{L}\p{N}_]+)""".r
+    tokenPattern.findAllIn(text).toList
   }
 }

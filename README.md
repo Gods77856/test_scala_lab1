@@ -1,8 +1,8 @@
 # Reddit Scala Lab - Dashboard de Parcial
 
-Este repositorio es una base de estudio y consulta rápida para el parcial de Lab 1. El código Scala en `src/main/scala` está preparado como skeleton para practicar, mientras que las soluciones de referencia viven en los archivos `.md`.
+Este repositorio es una base de estudio y consulta rápida para el parcial de Lab 1. El código Scala en `src/main/scala` contiene soluciones de referencia compilables y los archivos `.md` explican cómo adaptarlas.
 
-El objetivo no es solo practicar: también es poder abrir el repo durante el parcial, usar `Ctrl+F`, encontrar un patrón parecido al problema nuevo, copiarlo desde las guías y adaptarlo con cambios mínimos.
+El objetivo no es solo practicar: también es poder abrir el repo durante el parcial, usar `Ctrl+F`, encontrar un patrón parecido al problema nuevo, copiarlo desde las guías y adaptarlo con cambios mínimos. Las fuentes contienen soluciones de referencia compilables; para practicar desde cero, ocultá una función y reconstruíla usando sus tests.
 
 ---
 
@@ -22,6 +22,11 @@ Busca estas etiquetas en el código o en las guías:
 - `@FILTER_RELEVANT` -> filtro de posts vacíos, con espacios o sin título.
 - `@STOPWORDS` -> conteo de palabras con mayúscula excluyendo stopwords.
 - `@REPORT_LAB1` -> informe final del ejercicio 6 original.
+- `@PARCIAL_2026_SUBSCRIPTIONS` -> `name`, `url`, `count`, `before` estrictos.
+- `@URL_BUILDER` -> URL sin `?` ni parámetros duplicados.
+- `@PARCIAL_2026_POSTS` -> `Post(title, selftext, author)`.
+- `@KEYWORD_MATCH` -> conteo de palabras censuradas sin distinguir mayúsculas.
+- `@CUSTOM_REPORT` -> salida del parcial evaluado.
 
 ### 🧭 Dónde Ir Según el Problema
 
@@ -37,6 +42,7 @@ Busca estas etiquetas en el código o en las guías:
 | Entender el razonamiento paso a paso | [EJERCICIOS.md](./EJERCICIOS.md) |
 | Defender conceptos del PDF | [GUIA_PARCIAL_LAB1.md](./GUIA_PARCIAL_LAB1.md) |
 | Copiar plantillas genéricas | [GUT.md](./GUT.md) |
+| Resolver el parcial evaluado 2026 | [PARCIAL_EVALUADO_2026.md](./PARCIAL_EVALUADO_2026.md) y [Parcial2026.scala](./src/main/scala/Parcial2026.scala) |
 
 ---
 
@@ -48,12 +54,14 @@ test_lab1/
 ├── EJERCICIOS.md                 <- Mapa de resolución y ejercicios explicados
 ├── GUIA_PARCIAL_LAB1.md          <- Cobertura de PDFs y defensa conceptual
 ├── GUT.md                        <- Plantillas copiables y referencia técnica
+├── PARCIAL_EVALUADO_2026.md      <- Auditoría y solución exacta del parcial
 ├── build.sbt                     <- Dependencias Scala, json4s, scalaj-http, ScalaTest
 ├── src/main/scala/
 │   ├── FileIO.scala              <- @JSON_PARSE, @API_FETCH
 │   ├── RedditParser.scala        <- @TOLERANCIA_FALLOS, @FECHAS_UTC
 │   ├── Statistics.scala          <- @TEXT_MINING, @FOLD_LEFT
 │   ├── TextProcessing.scala      <- tokenización y fechas UTC
+│   ├── Parcial2026.scala         <- referencia compilable del parcial evaluado
 │   └── Main.scala                <- flujo completo: leer, descargar, parsear, filtrar
 ├── src/main/resources/
 │   └── subscriptions.json        <- datos de prueba
@@ -67,7 +75,7 @@ test_lab1/
 1. Abrí [EJERCICIOS.md](./EJERCICIOS.md) para reconocer qué patrón pide la consigna.
 2. Abrí [GUIA_PARCIAL_LAB1.md](./GUIA_PARCIAL_LAB1.md) si necesitás defender por qué la solución es funcional.
 3. Abrí [GUT.md](./GUT.md) y copiá la plantilla más parecida.
-4. Buscá el tag correspondiente en `src/main/scala/` para ubicar dónde completar el skeleton.
+4. Buscá el tag correspondiente en `src/main/scala/` para copiar la implementación de referencia.
 5. Adaptá nombres de campos, tipos de tupla y filtros.
 6. Corré `sbt test`; los tests son el oráculo para saber si tu implementación quedó bien.
 
@@ -81,7 +89,7 @@ sbt test
 sbt run
 ```
 
-Con el skeleton sin resolver, `sbt compile` debe pasar y `sbt test` va a fallar. Cuando completes las funciones, `sbt test` debería quedar en verde.
+El repositorio de referencia debe compilar y dejar todos los tests en verde. Después de adaptar una plantilla, corré nuevamente `sbt test`.
 
 Modo watch:
 
@@ -102,7 +110,7 @@ sbt "~test"
 - [ ] Sé usar `foldLeft` para acumular sin `var`.
 - [ ] Sé armar el informe del Lab 1 con `@REPORT_LAB1`.
 - [ ] Sé acceder a las posiciones de `Post`: `_1` subreddit, `_2` title, `_3` selftext, `_4` date, `_5` score, `_6` url.
-- [ ] Después de completar el skeleton, `sbt test` pasa en verde.
+- [ ] Después de adaptar una plantilla, `sbt test` sigue en verde.
 
 ---
 

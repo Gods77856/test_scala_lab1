@@ -43,9 +43,19 @@ object Main extends App {
       println(s"✓ Loaded ${subscriptions.length} subscriptions")
       println()
 
-      // TODO: Descargar, parsear y filtrar por minScore usando flatMap.
-      // Pista: la solución completa está en EJERCICIOS.md y GUIA_PARCIAL_LAB1.md.
-      val allPosts: List[Post] = List.empty[Post]
+      val allPosts: List[Post] = subscriptions.flatMap { case (name, url, minScore) =>
+        FileIO.downloadFeed(url)
+          .flatMap(RedditParser.parsePosts)
+          .map { posts =>
+            val filtered = posts.filter(_._5 >= minScore)
+            println(s"  Parsed ${filtered.length}/${posts.length} posts from $name")
+            filtered
+          }
+          .getOrElse {
+            println(s"  Could not load posts from $name")
+            List.empty[Post]
+          }
+      }
       
       println()
       println(s"Total posts collected: ${allPosts.length}")

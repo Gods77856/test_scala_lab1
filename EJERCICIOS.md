@@ -1,6 +1,8 @@
 # Reddit Scala Lab - Guía de Estudio y Ejercicios
 
-Esta guía explica cómo mapear una consigna nueva del parcial a un patrón funcional. El código fuente Scala está como skeleton para practicar; las soluciones copiables y explicadas están en los archivos `.md`.
+Esta guía explica cómo mapear una consigna nueva del parcial a un patrón funcional. El código fuente Scala contiene referencias compilables y las soluciones están explicadas en los archivos `.md`.
+
+Para el parcial efectivamente evaluado en 2026, usar [PARCIAL_EVALUADO_2026.md](./PARCIAL_EVALUADO_2026.md). Esta guía conserva las variantes del laboratorio original y de práctica.
 
 ---
 

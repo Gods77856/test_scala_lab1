@@ -3,6 +3,9 @@ package reddit
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.DefaultFormats._
+import scalaj.http.Http
+import scala.io.Source
+import scala.util.{Try, Using}
 
 /**
  * FileIO.scala
@@ -23,6 +26,26 @@ object FileIO {
    */
   type Subscription = (String, String, Int)
 
+  private def minScoreFrom(item: JValue): Int = {
+    (item \ "minScore").extractOpt[Int]
+      .orElse((item \ "minScore").extractOpt[String].flatMap(raw => Try(raw.trim.toInt).toOption))
+      .getOrElse(0)
+  }
+
+  private def subscriptionFrom(item: JValue): Option[Subscription] = {
+    for {
+      name <- (item \ "name").extractOpt[String].map(_.trim).filter(_.nonEmpty)
+      url <- (item \ "url").extractOpt[String].map(_.trim).filter(_.nonEmpty)
+    } yield (name, url, minScoreFrom(item))
+  }
+
+  private def parseSubscriptions(content: String): Option[List[Subscription]] = {
+    Try(parse(content)).toOption.flatMap {
+      case JArray(items) => Some(items.flatMap(subscriptionFrom))
+      case _ => None
+    }
+  }
+
   /**
    * Lee el archivo JSON de suscripciones desde el path especificado.
    * 
@@ -40,9 +63,7 @@ object FileIO {
    */
   def readSubscriptions(path: String): Option[List[Subscription]] = {
     // @JSON_PARSE
-    // TODO: Implementar lectura segura de JSON.
-    // Pista: la solución completa está en GUT.md y GUIA_PARCIAL_LAB1.md.
-    None
+    Using(Source.fromFile(path))(_.mkString).toOption.flatMap(parseSubscriptions)
   }
 
   /**
@@ -55,17 +76,20 @@ object FileIO {
    */
   def downloadFeed(url: String): Option[String] = {
     // @API_FETCH
-    // TODO: Descargar el contenido de la URL y devolver Some(body) o None.
-    // Pista: encapsular excepciones y fallas HTTP en Option.
-    None
+    Try {
+      Http(url)
+        .header("User-Agent", "RedditScalaLab/1.0")
+        .timeout(connTimeoutMs = 5000, readTimeoutMs = 10000)
+        .asString
+    }.toOption.filter(_.isSuccess).map(_.body)
   }
 
   /**
    * Lee el archivo de suscripciones desde los recursos.
    */
   def loadSubscriptionsFromResources(): Option[List[Subscription]] = {
-    // TODO: Leer /subscriptions.json desde resources.
-    // Pista: puede resolverse reutilizando el mismo patrón de readSubscriptions.
-    None
+    Option(getClass.getResourceAsStream("/subscriptions.json")).flatMap { stream =>
+      Using(Source.fromInputStream(stream, "UTF-8"))(_.mkString).toOption.flatMap(parseSubscriptions)
+    }
   }
 }

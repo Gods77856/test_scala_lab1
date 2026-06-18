@@ -42,8 +42,11 @@ object Statistics {
    * @return String con reporte de estadísticas (opcional, puede usarse para debug)
    */
   def basicStats(posts: List[Post]): String = {
-    // TODO: Calcular total y promedio sin mutación.
-    ""
+    if (posts.isEmpty) "No posts available"
+    else {
+      val avgScore = posts.map(_._5).sum.toDouble / posts.length
+      f"Total: ${posts.length} posts | Avg Score: $avgScore%.2f"
+    }
   }
 
   /**
@@ -53,8 +56,7 @@ object Statistics {
    */
   def sumarScoresTotales(posts: List[Post]): Int = {
     // @FOLD_LEFT
-    // TODO: Implementar con foldLeft. No usar var.
-    0
+    posts.foldLeft(0) { (total, post) => total + post._5 }
   }
 
   /**
@@ -62,13 +64,12 @@ object Statistics {
    */
   def isRelevantPost(post: Post): Boolean = {
     // @FILTER_RELEVANT
-    // TODO: Rechazar posts sin título, con title fallback o selftext vacío.
-    false
+    val title = post._2.trim
+    title.nonEmpty && title != "Sin Título" && post._3.trim.nonEmpty
   }
 
   def filterRelevantPosts(posts: List[Post]): List[Post] = {
-    // TODO: Usar filter con isRelevantPost.
-    List.empty[Post]
+    posts.filter(isRelevantPost)
   }
 
   /**
@@ -77,21 +78,29 @@ object Statistics {
    */
   def capitalizedWordsTop(posts: List[Post], limit: Int): List[(String, Int)] = {
     // @STOPWORDS @TEXT_MINING
-    // TODO: Tokenizar title+selftext, filtrar mayúsculas, sacar stopwords y contar.
-    List.empty[(String, Int)]
+    posts
+      .flatMap(post => TextProcessing.tokenize(s"${post._2} ${post._3}"))
+      .filter(_.headOption.exists(_.isUpper))
+      .map(_.toLowerCase)
+      .filterNot(Stopwords.contains)
+      .groupBy(identity)
+      .map { case (word, occurrences) => (word, occurrences.length) }
+      .toList
+      .sortBy { case (word, count) => (-count, word) }
+      .take(limit)
   }
 
   def capitalizedWordsBySubreddit(posts: List[Post], limit: Int): Map[String, List[(String, Int)]] = {
-    // TODO: Agrupar por subreddit y aplicar capitalizedWordsTop a cada grupo.
-    Map.empty[String, List[(String, Int)]]
+    groupBySubreddit(posts).map { case (subreddit, subredditPosts) =>
+      subreddit -> capitalizedWordsTop(subredditPosts, limit)
+    }
   }
 
   /**
    * Lab 1 - Ejercicio 6: primeros posts para el informe final.
    */
   def firstPostsSummary(posts: List[Post], limit: Int): List[(String, String, String)] = {
-    // TODO: Tomar los primeros N y devolver (title, date, url).
-    List.empty[(String, String, String)]
+    posts.take(limit).map(post => (post._2, post._4, post._6))
   }
 
   /**
@@ -123,8 +132,15 @@ object Statistics {
    */
   def mentionsTop(posts: List[Post], limit: Int): List[(String, Int)] = {
     // @TEXT_MINING
-    // TODO: Implementar pipeline flatMap -> filter -> groupBy -> map -> sortBy -> take.
-    List.empty[(String, Int)]
+    posts
+      .flatMap(post => TextProcessing.tokenize(post._3))
+      .map(_.toLowerCase)
+      .filter(mention => mention.startsWith("u/") && mention.length > 2)
+      .groupBy(identity)
+      .map { case (mention, occurrences) => (mention, occurrences.length) }
+      .toList
+      .sortBy { case (mention, count) => (-count, mention) }
+      .take(limit)
   }
 
   /**
@@ -137,8 +153,19 @@ object Statistics {
    * @return String con reporte formateado
    */
   def generateSubredditReport(subreddit: String, posts: List[Post]): String = {
-    // TODO: Armar reporte por subreddit usando basicStats y mentionsTop.
-    ""
+    val report = new StringBuilder
+    report.append(s"=== Subreddit: $subreddit ===\n")
+    report.append(s"Total posts: ${posts.length}\n")
+    if (posts.nonEmpty) {
+      val avgScore = posts.map(_._5).sum.toDouble / posts.length
+      report.append(f"Avg Score: $avgScore%.2f\n")
+      report.append(s"Max Score: ${posts.map(_._5).max}\n")
+      report.append("Top User Mentions:\n")
+      mentionsTop(posts, 3).foreach { case (mention, count) =>
+        report.append(s"  - $mention: $count\n")
+      }
+    }
+    report.toString()
   }
 
   /**
@@ -146,8 +173,19 @@ object Statistics {
    */
   def generateLab1Report(subreddit: String, posts: List[Post]): String = {
     // @REPORT_LAB1
-    // TODO: Combinar filterRelevantPosts, sumarScoresTotales, capitalizedWordsTop y firstPostsSummary.
-    ""
+    val cleanPosts = filterRelevantPosts(posts)
+    val report = new StringBuilder
+    report.append(s"## $subreddit\n")
+    report.append(s"- Total score: ${sumarScoresTotales(cleanPosts)}\n")
+    report.append("- Palabras frecuentes:\n")
+    capitalizedWordsTop(cleanPosts, 10).foreach { case (word, count) =>
+      report.append(s"  - $word: $count\n")
+    }
+    report.append("- Primeros posts:\n")
+    firstPostsSummary(cleanPosts, 5).foreach { case (title, date, url) =>
+      report.append(s"  - $title | $date | $url\n")
+    }
+    report.toString()
   }
 
   /**
@@ -157,7 +195,6 @@ object Statistics {
    * @return Map[String, List[Post]] agrupado por subreddit
    */
   def groupBySubreddit(posts: List[Post]): Map[String, List[Post]] = {
-    // TODO: Agrupar por post._1.
-    Map.empty[String, List[Post]]
+    posts.groupBy(_._1)
   }
 }
